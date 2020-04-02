@@ -5,6 +5,7 @@ import NoWhitespace._
 
 sealed trait Expr
 object Expr {
+  final case class BindingRef(name: AST.Ident)              extends Expr
   final case class Int(value: scala.Int)                    extends Expr
   final case class Str(value: String)                       extends Expr
   final case class Block(exprs: Seq[Expr])                  extends Expr
@@ -43,6 +44,7 @@ object parse {
 
   // expressions
   def int[_: P]: P[Expr.Int] = P(digits).map(Expr.Int(_))
+  def bindingRef[_: P]: P[Expr.BindingRef] = P(ident).map(Expr.BindingRef(_))
   def str[_: P]: P[Expr.Str] =
     P("\"" ~ CharPred(_ != '"').rep.! ~ "\"")
       .map(Expr.Str(_))
@@ -53,7 +55,7 @@ object parse {
       }
   def expr[_: P]: P[Expr] =
     P(
-      (int | fncall | str)
+      (int | fncall | str | bindingRef)
         .map(Seq(_)) | ("{" ~ ws ~ expr
         .rep(sep = blockSeparator) ~ ws ~ "}"),
     )./.map {

@@ -13,6 +13,10 @@ object Main {
           "drifting"
         )
       }
+
+      add(x, y) = {
+        print(x, y)
+      }
     """)
   }
 }
