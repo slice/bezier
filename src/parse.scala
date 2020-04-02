@@ -23,10 +23,10 @@ object parse {
   // whitespace, separators, and newlines
   def sp[_: P]: P[Unit]             = P(CharIn(" \t"))
   def nl[_: P]: P[Unit]             = P(CharIn("\n\r"))
-  def ws[_: P]: P[Unit]             = P(sp | nl)
-  def nlws[_: P]: P[Unit]           = P(nl ~ sp.rep)
-  def com[_: P]: P[Unit]            = P("," ~ ws.?)
-  def blockSeparator[_: P]: P[Unit] = P(("\n" | ".") ~ ws.rep.?)
+  def ws[_: P]: P[Unit]             = P(sp | nl).rep
+  def nlws[_: P]: P[Unit]           = P(nl ~ ws)
+  def com[_: P]: P[Unit]            = P("," ~ ws)
+  def blockSeparator[_: P]: P[Unit] = P(("\n" | ".") ~ ws)
 
   // tokens
   def ident[_: P]: P[AST.Ident] =
@@ -47,16 +47,16 @@ object parse {
     P("\"" ~ CharPred(_ != '"').rep.! ~ "\"")
       .map(Expr.Str(_))
   def fncall[_: P]: P[Expr.Call] =
-    P(ident ~ "(" ~ exprlist ~ ")")
+    P(ident ~ "(" ~ ws ~ exprlist ~ ws ~ ")")
       .map {
         case (name, params) => Expr.Call(name, params)
       }
   def expr[_: P]: P[Expr] =
     P(
       (int | fncall | str)
-        .map(Seq(_)) | ("{" ~ ws.rep ~ expr
-        .rep(sep = blockSeparator) ~ ws.rep ~ "}"),
-    ).map {
+        .map(Seq(_)) | ("{" ~ ws ~ expr
+        .rep(sep = blockSeparator) ~ ws ~ "}"),
+    )./.map {
       case seq if seq.size == 1 => seq.head
       case seq                  => Expr.Block(seq)
     }
@@ -69,7 +69,7 @@ object parse {
   def defn[_: P]: P[AST] = P(directive | funcdef)
 
   def program[_: P]: P[Seq[AST]] =
-    P(ws.rep ~ defn.rep(min = 1, sep = nl) ~ ws.rep ~ End)
+    P(ws ~ defn.rep(min = 1, sep = nl) ~ ws ~ End)
 
   def apply(sourceText: String): Unit =
     parsley(sourceText, program(_)) match {

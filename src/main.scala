@@ -6,6 +6,12 @@ object Main {
       main() = {
         print("hey"). print("what's up")
         print("woop")
+
+        print(
+          "multi",
+          "line",
+          "drifting"
+        )
       }
     """)
   }
