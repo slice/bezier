@@ -77,6 +77,6 @@ object parse {
         println(s"parsed = $result")
       case failure @ Parsed.Failure(_, _, _) =>
         val trace = failure.trace()
-        println(s"failed to parse: ${trace.longMsg}")
+        println(s"failed to parse: ${trace.msg}")
     }
 }
