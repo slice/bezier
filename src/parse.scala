@@ -47,7 +47,7 @@ object parse {
     P("\"" ~ CharPred(_ != '"').rep.! ~ "\"")
       .map(Expr.Str(_))
   def fncall[_: P]: P[Expr.Call] =
-    P(ident ~ "(" ~ ws ~ exprlist ~ ws ~ ")")
+    P(ident ~ "(" ~ ws ~/ exprlist ~ ws ~ ")")
       .map {
         case (name, params) => Expr.Call(name, params)
       }
@@ -64,7 +64,7 @@ object parse {
   // definitions
   def directive[_: P] = P("@" ~ ident).map(AST.Directive(_))
   def funcdef[_: P]: P[AST.Funcdef] =
-    P(ident ~ "(" ~ identlist ~ ")" ~ sp ~ "=" ~ sp ~ expr)
+    P(ident ~/ "(" ~ identlist ~ ")" ~/ sp ~ "=" ~ sp ~ expr)
       .map(AST.Funcdef.tupled)
   def defn[_: P]: P[AST] = P(directive | funcdef)
 
