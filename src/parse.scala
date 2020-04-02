@@ -21,11 +21,12 @@ object AST {
 
 object parse {
   // whitespace, separators, and newlines
-  def sp[_: P]: P[Unit]   = P(CharIn(" \t"))
-  def nl[_: P]: P[Unit]   = P(CharIn("\n\r"))
-  def ws[_: P]: P[Unit]   = P(sp | nl)
-  def nlws[_: P]: P[Unit] = P(nl ~ sp.rep)
-  def com[_: P]: P[Unit]  = P("," ~ ws.?)
+  def sp[_: P]: P[Unit]             = P(CharIn(" \t"))
+  def nl[_: P]: P[Unit]             = P(CharIn("\n\r"))
+  def ws[_: P]: P[Unit]             = P(sp | nl)
+  def nlws[_: P]: P[Unit]           = P(nl ~ sp.rep)
+  def com[_: P]: P[Unit]            = P("," ~ ws.?)
+  def blockSeparator[_: P]: P[Unit] = P(("\n" | ".") ~ ws.rep.?)
 
   // tokens
   def ident[_: P]: P[AST.Ident] =
@@ -53,7 +54,8 @@ object parse {
   def expr[_: P]: P[Expr] =
     P(
       (int | fncall | str)
-        .map(Seq(_)) | ("{" ~ ws.rep ~ expr.rep(sep = nlws) ~ ws.rep ~ "}"),
+        .map(Seq(_)) | ("{" ~ ws.rep ~ expr
+        .rep(sep = blockSeparator) ~ ws.rep ~ "}"),
     ).map {
       case seq if seq.size == 1 => seq.head
       case seq                  => Expr.Block(seq)

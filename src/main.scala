@@ -4,7 +4,8 @@ object Main {
   def main(args: Array[String]): Unit = {
     parse("""
       main() = {
-        print("hey")
+        print("hey"). print("what's up")
+        print("woop")
       }
     """)
   }
