@@ -69,7 +69,7 @@ object parse {
   def defn[_: P]: P[AST] = P(directive | funcdef)
 
   def program[_: P]: P[Seq[AST]] =
-    P(ws ~ defn.rep(min = 1, sep = nl) ~ ws ~ End)
+    P(Start ~ ws ~ defn.rep(min = 1, sep = ws) ~ ws ~ End)
 
   def apply(sourceText: String): Unit =
     parsley(sourceText, program(_)) match {
